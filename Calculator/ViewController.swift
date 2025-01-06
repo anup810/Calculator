@@ -26,7 +26,16 @@ class ViewController: UIViewController {
         case none
     }
     var operation: Operation = .none
-    
+    var operationIsSelected:Bool{
+        for button in operationButtons{
+            if button.isSelection{
+                return true
+            }
+        }
+        return false
+    }
+    var previousNumber: Double?
+    var equalsButtonTapped: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
         setupButton()
@@ -44,7 +53,11 @@ class ViewController: UIViewController {
     
     @IBAction func didTapOperationButton(_ sender: OperatorButton) {
         let title = sender.currentTitle
-        
+        if let _ = previousNumber, !equalsButtonTapped, !operationIsSelected {
+            perfomOperation()
+            previousNumber = nil
+        }
+    
         switch title{
         case "÷":
             operation = .divide
@@ -58,6 +71,11 @@ class ViewController: UIViewController {
             break
         }
         highLightButton(button: sender)
+        equalsButtonTapped = false
+        
+        guard let displayText = displayLabel.text else {return}
+        guard let displayNumber = Double(displayText) else {return}
+        previousNumber = displayNumber
 
     }
     func deselectButton(){
@@ -74,16 +92,42 @@ class ViewController: UIViewController {
         button.isSelection = true
 
     }
+    func perfomOperation(){
+        guard let previousNumber = previousNumber else {return}
+        let displayText = displayLabel.text!
+        guard let displayNumber = Double(displayText) else {return}
+        
+        var result: Double = 0.0
+
+        switch operation {
+        case .divide:
+            result = previousNumber / displayNumber
+        case .multiply:
+            result = previousNumber * displayNumber
+        case .minus:
+            result = previousNumber - displayNumber
+        case .plus:
+            result = previousNumber + displayNumber
+        case .none:
+            return
+        }
+        displayLabel.text = "\(result)"
+        self.previousNumber = result
+    }
     
     @IBAction func didTapNumberButtons(_ sender: UIButton) {
-       let number = sender.tag
-        if displayLabel.text == "0"{
+        let number = sender.tag
+        
+        if operationIsSelected{
+            deselectButton()
             displayLabel.text = "\(number)"
         }else{
-            displayLabel.text! += "\(number)"
+            if displayLabel.text == "0"{
+                displayLabel.text = "\(number)"
+            }else{
+                displayLabel.text! += "\(number)"
+            }
         }
-
-
     }
     
     
@@ -92,6 +136,10 @@ class ViewController: UIViewController {
     }
     
     @IBAction func didTapEqualsButton() {
+        guard operation != .none else {return}
+        perfomOperation()
+        equalsButtonTapped = true
+
     }
     
     @IBAction func didTapPercentageButton() {
