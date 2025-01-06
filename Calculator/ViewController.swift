@@ -34,6 +34,12 @@ class ViewController: UIViewController {
         }
         return false
     }
+    var displayNumber: Double{
+        let text = displayLabel.text!
+        let number = Double(text)!
+        return number
+    }
+
     var previousNumber: Double?
     var equalsButtonTapped: Bool = false
     override func viewDidLoad() {
@@ -41,11 +47,10 @@ class ViewController: UIViewController {
         setupButton()
     }
     func setupButton(){
-        for button in operationButtons {
+        operationButtons.forEach { button in
             button.layer.cornerRadius = button.frame.height / 2
         }
-
-        for button in roundButtons{
+        roundButtons.forEach { button in
             button.layer.cornerRadius = button.frame.height / 2
         }
         
@@ -73,13 +78,19 @@ class ViewController: UIViewController {
         highLightButton(button: sender)
         equalsButtonTapped = false
         
-        guard let displayText = displayLabel.text else {return}
-        guard let displayNumber = Double(displayText) else {return}
+//        guard let displayText = displayLabel.text else {return}
+//        guard let displayNumber = Double(displayText) else {return}
         previousNumber = displayNumber
+        
 
     }
     func deselectButton(){
-        for button in operationButtons{
+//        for button in operationButtons{
+//            button.backgroundColor = .systemOrange
+//            button.setTitleColor(.white, for: .normal)
+//            button.isSelection = false
+//        }
+        operationButtons.forEach { button in
             button.backgroundColor = .systemOrange
             button.setTitleColor(.white, for: .normal)
             button.isSelection = false
@@ -94,8 +105,9 @@ class ViewController: UIViewController {
     }
     func perfomOperation(){
         guard let previousNumber = previousNumber else {return}
-        let displayText = displayLabel.text!
-        guard let displayNumber = Double(displayText) else {return}
+//        let displayText = displayLabel.text!
+//        guard let displayNumber = Double(displayText) else {return}
+        
         
         var result: Double = 0.0
 
@@ -111,7 +123,12 @@ class ViewController: UIViewController {
         case .none:
             return
         }
-        displayLabel.text = "\(result)"
+        if result.truncatingRemainder(dividingBy: 1) == 0{
+            let intNumber = Int(result)
+            displayLabel.text = "\(intNumber)"
+        }else{
+            displayLabel.text = "\(result)"
+        }
         self.previousNumber = result
     }
     
@@ -133,6 +150,12 @@ class ViewController: UIViewController {
     
     
     @IBAction func didTapDecimalButton() {
+        let text = displayLabel.text!
+        if text.last == "."{
+            displayLabel.text?.removeLast()
+        }else if  !text.contains("."){
+            displayLabel.text! += "."
+        }
     }
     
     @IBAction func didTapEqualsButton() {
@@ -143,12 +166,22 @@ class ViewController: UIViewController {
     }
     
     @IBAction func didTapPercentageButton() {
+        guard var number = Double(displayLabel.text!) else {return}
+        number /= 100
+        displayLabel.text = "\(number)"
     }
     
     @IBAction func didTapPlusMinusButton() {
+        guard var number = Double(displayLabel.text!) else {return}
+        number *= -1
+        displayLabel.text = "\(number)"
     }
     
     @IBAction func didTapClearButton() {
+        previousNumber = nil
+        displayLabel.text = "0"
+        operation = .none
+        deselectButton()
     }
 }
 
